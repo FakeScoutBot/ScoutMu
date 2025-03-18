@@ -11,7 +11,6 @@ from youtubesearchpython.__future__ import VideosSearch
 
 from AviaxMusic.utils.database import is_on_off
 from AviaxMusic.utils.formatters import time_to_seconds
-import os
 import glob
 import random
 import logging
