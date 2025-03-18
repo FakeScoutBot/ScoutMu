@@ -1,11 +1,12 @@
+# AviaxMusic/__main__.py
+
+# Import the necessary modules
 import asyncio
 import importlib
 
 from pyrogram import idle
-from pytgcalls.exceptions import NoActiveGroupCall
 
-import config
-from AviaxMusic import LOGGER, app, userbot
+from AviaxMusic import app, userbot
 from AviaxMusic.core.call import Aviax
 from AviaxMusic.misc import sudo
 from AviaxMusic.plugins import ALL_MODULES
@@ -14,16 +15,25 @@ from config import BANNED_USERS
 
 
 async def init():
-    if (
-        not config.STRING1
-        and not config.STRING2
-        and not config.STRING3
-        and not config.STRING4
-        and not config.STRING5
-    ):
-        LOGGER(__name__).error("Assistant client variables not defined, exiting...")
-        exit()
-    await sudo()
+    # Load all modules
+    print("𝐈𝐧𝐢𝐭𝐢𝐚𝐥𝐢𝐳𝐢𝐧𝐠 𝐌𝐨𝐝𝐮𝐥𝐞𝐬...")
+    for all_module in ALL_MODULES:
+        importlib.import_module("AviaxMusic.plugins." + all_module)
+    print("𝐀𝐥𝐥 𝐌𝐨𝐝𝐮𝐥𝐞𝐬 𝐋𝐨𝐚𝐝𝐞𝐝!")
+
+    # Start the userbot
+    await userbot.start()
+    print("𝐔𝐬𝐞𝐫𝐛𝐨𝐭 𝐒𝐭𝐚𝐫𝐭𝐞𝐝!")
+
+    # Start the main bot
+    await app.start()
+    print("𝐌𝐮𝐬𝐢𝐜 𝐁𝐨𝐭 𝐒𝐭𝐚𝐫𝐭𝐞𝐝!")
+
+    # Call the main music player
+    await Aviax.start()
+    print("𝐌𝐮𝐬𝐢𝐜 𝐏𝐥𝐚𝐲𝐞𝐫 𝐒𝐭𝐚𝐫𝐭𝐞𝐝!")
+
+    # Load banned users
     try:
         users = await get_gbanned()
         for user_id in users:
@@ -33,29 +43,11 @@ async def init():
             BANNED_USERS.add(user_id)
     except:
         pass
-    await app.start()
-    for all_module in ALL_MODULES:
-        importlib.import_module("AviaxMusic.plugins" + all_module)
-    LOGGER("AviaxMusic.plugins").info("Successfully Imported Modules...")
-    await userbot.start()
-    await Aviax.start()
-    try:
-        await Aviax.stream_call("https://te.legra.ph/file/29f784eb49d230ab62e9e.mp4")
-    except NoActiveGroupCall:
-        LOGGER("AviaxMusic").error(
-            "Please turn on the videochat of your log group\channel.\n\nStopping Bot..."
-        )
-        exit()
-    except:
-        pass
-    await Aviax.decorators()
-    LOGGER("AviaxMusic").info(
-        "\x41\x76\x69\x61\x78\x20\x4d\x75\x73\x69\x63\x20\x53\x74\x61\x72\x74\x65\x64\x20\x53\x75\x63\x63\x65\x73\x73\x66\x75\x6c\x6c\x79\x2e\x0a\x0a\x44\x6f\x6e\x27\x74\x20\x66\x6f\x72\x67\x65\x74\x20\x74\x6f\x20\x76\x69\x73\x69\x74\x20\x40\x41\x76\x69\x61\x78\x4f\x66\x66\x69\x63\x69\x61\x6c"
-    )
+    print("𝐁𝐨𝐭 𝐒𝐭𝐚𝐫𝐭𝐞𝐝 𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲!")
+
+    # Idle the bot
     await idle()
-    await app.stop()
-    await userbot.stop()
-    LOGGER("AviaxMusic").info("Stopping Aviax Music Bot...")
+    print("𝐁𝐨𝐭 𝐒𝐭𝐨𝐩𝐩𝐞𝐝!")
 
 
 if __name__ == "__main__":
