@@ -7,7 +7,6 @@ from pyrogram import Client
 from pyrogram.types import Message, CallbackQuery
 from AviaxMusic import app
 from utils.decorators.admins import adminsOnly
-from strings import get_string
 
 
 def language(mystic: Callable) -> Callable:
