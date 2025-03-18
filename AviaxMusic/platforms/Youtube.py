@@ -293,39 +293,39 @@ class YouTubeAPI:
         return title, duration_min, thumbnail, vidid
 
     async def download(self, url, mystic, video=False, videoid=None):
-        """Modified to stream without downloading"""
-        try:
-            with yt_dlp.YoutubeDL(self.options) as ydl:
-                info = ydl.extract_info(url, download=False)
-                stream_url = info.get("url", None)
-                
-                if not videoid:
-                    videoid = info.get("id", None)
-                
-                title = info.get("title", None)
-                duration_min = info.get("duration_string", None) or self._seconds_to_min(info.get("duration", 0))
-                
-                # Fake a file path that's really just the stream URL
-                file_path = f"STREAM_URL:{stream_url}:{videoid}.mp3"
-                
-                return {
-                    "title": title,
-                    "link": url,
-                    "path": file_path,
-                    "dur": duration_min,
-                    "videoid": videoid,
-                }
+    """Modified to stream without downloading"""
+    try:
+        with yt_dlp.YoutubeDL(self.options) as ydl:
+            info = ydl.extract_info(url, download=False)
+            stream_url = info.get("url", None)
             
-        except Exception as e:
-            print(e)
-            return {}
+            if not videoid:
+                videoid = info.get("id", None)
+            
+            title = info.get("title", None)
+            duration_min = info.get("duration_string", None) or self._seconds_to_min(info.get("duration", 0))
+            
+            # Return stream URL in special format
+            file_path = f"STREAM_URL:{stream_url}:{videoid}"
+            
+            return {
+                "title": title,
+                "link": url,
+                "path": file_path,
+                "dur": duration_min,
+                "videoid": videoid,
+            }
+        
+    except Exception as e:
+        print(e)
+        return {}
 
-    def _seconds_to_min(self, seconds):
-        if seconds is None:
-            return "00:00"
-        seconds = int(seconds)
-        min, sec = divmod(seconds, 60)
-        return f"{min:02d}:{sec:02d}"
+def _seconds_to_min(self, seconds):
+    if seconds is None:
+        return "00:00"
+    seconds = int(seconds)
+    min, sec = divmod(seconds, 60)
+    return f"{min:02d}:{sec:02d}"
 
         def video_dl():
             ydl_optssx = {
