@@ -2,7 +2,7 @@ import asyncio
 import os
 import re
 import json
-from typing import Union
+from typing import Union, Dict, List
 
 import yt_dlp
 from pyrogram.enums import MessageEntityType
@@ -11,13 +11,23 @@ from youtubesearchpython.__future__ import VideosSearch
 
 from AviaxMusic.utils.database import is_on_off
 from AviaxMusic.utils.formatters import time_to_seconds
-
-
-
 import os
 import glob
 import random
 import logging
+
+class YouTubeAPI:
+    def __init__(self):
+        self.regex = r"^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+"
+        self.options = {
+            "format": "bestaudio/best",
+            "verbose": False,
+            "quiet": True,
+            "nocheckcertificate": True,
+            "noplaylist": True,
+            "prefer_insecure": False,
+            "extract_flat": True,  # Don't download, just get info
+        }
 
 def cookie_txt_file():
     folder_path = f"{os.getcwd()}/cookies"
@@ -282,37 +292,40 @@ class YouTubeAPI:
         thumbnail = result[query_type]["thumbnails"][0]["url"].split("?")[0]
         return title, duration_min, thumbnail, vidid
 
-    async def download(
-        self,
-        link: str,
-        mystic,
-        video: Union[bool, str] = None,
-        videoid: Union[bool, str] = None,
-        songaudio: Union[bool, str] = None,
-        songvideo: Union[bool, str] = None,
-        format_id: Union[bool, str] = None,
-        title: Union[bool, str] = None,
-    ) -> str:
-        if videoid:
-            link = self.base + link
-        loop = asyncio.get_running_loop()
-        def audio_dl():
-            ydl_optssx = {
-                "format": "bestaudio/best",
-                "outtmpl": "downloads/%(id)s.%(ext)s",
-                "geo_bypass": True,
-                "nocheckcertificate": True,
-                "quiet": True,
-                "cookiefile" : cookie_txt_file(),
-                "no_warnings": True,
-            }
-            x = yt_dlp.YoutubeDL(ydl_optssx)
-            info = x.extract_info(link, False)
-            xyz = os.path.join("downloads", f"{info['id']}.{info['ext']}")
-            if os.path.exists(xyz):
-                return xyz
-            x.download([link])
-            return xyz
+    async def download(self, url, mystic, video=False, videoid=None):
+        """Modified to stream without downloading"""
+        try:
+            with yt_dlp.YoutubeDL(self.options) as ydl:
+                info = ydl.extract_info(url, download=False)
+                stream_url = info.get("url", None)
+                
+                if not videoid:
+                    videoid = info.get("id", None)
+                
+                title = info.get("title", None)
+                duration_min = info.get("duration_string", None) or self._seconds_to_min(info.get("duration", 0))
+                
+                # Fake a file path that's really just the stream URL
+                file_path = f"STREAM_URL:{stream_url}:{videoid}.mp3"
+                
+                return {
+                    "title": title,
+                    "link": url,
+                    "path": file_path,
+                    "dur": duration_min,
+                    "videoid": videoid,
+                }
+            
+        except Exception as e:
+            print(e)
+            return {}
+
+    def _seconds_to_min(self, seconds):
+        if seconds is None:
+            return "00:00"
+        seconds = int(seconds)
+        min, sec = divmod(seconds, 60)
+        return f"{min:02d}:{sec:02d}"
 
         def video_dl():
             ydl_optssx = {
